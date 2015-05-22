@@ -3,9 +3,10 @@
 #include <vector>
 #include <climits>
 #include <cfloat>
+#include <cstdlib>
 using namespace std;
 
-#define CELL_LENGTH 0.1		// 0.1 mm
+#define CELL_LENGTH 1.0		// 0.1 mm
 
 
 #define UNLABELED 0
@@ -19,9 +20,23 @@ struct Point {
 
 vector<Point> v;
 
-// this function is extreamly slow, better to use kd-tree
-void point_in_cell(float lowerleft_x, float lowerleft_y) {
+void init() {
+	srand (time(NULL));
+}
 
+
+// this function is extreamly slow, better to use kd-tree
+bool point_exist_in_cell(float lowerleft_x, float lowerleft_y) {
+	for (int i = 0; i < v.size(); i++) {
+		Point p = v[i];
+		if (p.x > lowerleft_x &&
+			p.x < lowerleft_x + CELL_LENGTH &&
+			p.y > lowerleft_y &&
+			p.y < lowerleft_y + CELL_LENGTH) {
+			return true;
+		}
+	}
+	return false;
 }
 
 int main() {
@@ -32,6 +47,7 @@ int main() {
 	while (cin >> x >> y) {
 		v.push_back(Point(x,y));
 	}
+	//fclose(stdin);
 	cout << "total points: " << v.size() << endl;
 
 	// find the points with max/min x/y
@@ -57,12 +73,82 @@ int main() {
 	// cut into grid
 	int m = ( max_x - min_x ) / CELL_LENGTH;
 	int n = ( max_y - min_y ) / CELL_LENGTH;
-	vector<vector<unsigned char> > grid(n, vector<unsigned char>(m, UNLABELED));
-	for (float i = min_x; i < max_x; i += CELL_LENGTH) {
-		for (float j = min_y; j < max_y; j += CELL_LENGTH) {
-			
+
+	m++;
+	n++;
+
+	cout << "m = " << m << "\nn = " << n << endl;
+
+	freopen("grid_points.txt", "w", stdout);
+
+	vector<vector<int> > grid(m, vector<int>(n, UNLABELED));
+	for (float i = 0; i < m; i++) {
+		for (float j = 0; j < n; j++) {
+			if (point_exist_in_cell(min_x + i * CELL_LENGTH, min_y + j * CELL_LENGTH)) {
+				grid[i][j] = BOUNDARY;
+				cout << min_x + i * CELL_LENGTH << " " << min_y + j * CELL_LENGTH << endl;
+			}
 		}
 	}
-	
+
+	//fclose(stdout);
+	//cout << "grid cell count: " << grid.size() << endl;
+	freopen("random_inside_points.txt", "w", stdout);
+
+	int count = 0;
+	const int threshold = 3000;
+	while (count < threshold) {
+		int x = rand() % m;
+		int y = rand() % n;
+
+		// check 4 direction
+		// up
+		bool hit = false;
+		for (int i = y; i < n; i++) {
+			if (grid[x][i] == BOUNDARY) {
+				hit = true;
+				break;
+			}
+		}
+		if (!hit) {
+			continue;
+		}
+		hit = false;
+		// down
+		for (int i = y; i >= 0; i--) {
+			if (grid[x][i] == BOUNDARY) {
+				hit = true;
+				break;
+			}
+		}
+		if (!hit) {
+			continue;
+		}
+		hit = false;
+		// right 
+		for (int i = x; i < m; i++) {
+			if (grid[i][y] == BOUNDARY) {
+				hit = true;
+				break;
+			}
+		}
+		if (!hit) {
+			continue;
+		}
+		hit = false;
+		// left 
+		for (int i = x; i >= 0; i--) {
+			if (grid[i][y] == BOUNDARY) {
+				hit = true;
+				break;
+			}
+		}
+		if (!hit) {
+			continue;
+		}
+
+		count++;
+		cout << min_x + x * CELL_LENGTH << " " << min_y + y * CELL_LENGTH << endl;
+	}
 	return 0;
 }
