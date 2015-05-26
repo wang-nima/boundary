@@ -11,6 +11,10 @@ using namespace std;
 
 #define UNLABELED 0
 #define BOUNDARY 1
+#define INSIDE 2
+
+
+#define EIGHT_DIRECTION
 
 struct Point {
 	float x;
@@ -37,6 +41,44 @@ bool point_exist_in_cell(float lowerleft_x, float lowerleft_y) {
 		}
 	}
 	return false;
+}
+
+// inside points and boundary are both neighbors
+int get_neighbor_count(const vector<vector<unsigned int> > &v, int x, int y) {
+	int count = 0;
+	for (int i = x - 1; i <= x + 1; i++) {
+		for (int j = y - 1; j <= y + 1; j++) {
+			if ( ((v[i][j] & BOUNDARY) == BOUNDARY) || ((v[j][j] & INSIDE) == INSIDE) )
+				count++;
+		}
+	}
+	return count;
+}
+
+
+void grow(vector<vector<unsigned int> > &v) {
+	int m = v.size();
+	int n = v[0].size();
+	for (int i = 1; i < m - 1; i++) {
+		for (int j = 1; j < n - 1; j++) {
+			if (get_neighbor_count(v, i, j) >= 5) {
+				v[i][j] |= INSIDE;
+			}
+		}
+	}
+}
+
+void shrink(vector<vector<unsigned int> > &v) {
+	int m = v.size();
+	int n = v[0].size();
+	for (int i = 1; i < m - 1; i++) {
+		for (int j = 1; j < n - 1; j++) {
+			if (get_neighbor_count(v, i, j) <= 3) {
+				v[i][j] &= ~INSIDE;
+			}
+		}
+	}
+	
 }
 
 int main() {
@@ -81,11 +123,11 @@ int main() {
 
 	freopen("grid_points.txt", "w", stdout);
 
-	vector<vector<int> > grid(m, vector<int>(n, UNLABELED));
+	vector<vector<unsigned int> > grid(m, vector<unsigned int>(n, UNLABELED));
 	for (float i = 0; i < m; i++) {
 		for (float j = 0; j < n; j++) {
 			if (point_exist_in_cell(min_x + i * CELL_LENGTH, min_y + j * CELL_LENGTH)) {
-				grid[i][j] = BOUNDARY;
+				grid[i][j] |= BOUNDARY;
 				cout << min_x + i * CELL_LENGTH << " " << min_y + j * CELL_LENGTH << endl;
 			}
 		}
@@ -97,6 +139,7 @@ int main() {
 
 	int count = 0;
 	const int threshold = 3000;
+
 	while (count < threshold) {
 		int x = rand() % m;
 		int y = rand() % n;
@@ -105,40 +148,7 @@ int main() {
 		// up
 		bool hit = false;
 		for (int i = y; i < n; i++) {
-			if (grid[x][i] == BOUNDARY) {
-				hit = true;
-				break;
-			}
-		}
-		if (!hit) {
-			continue;
-		}
-		hit = false;
-		// down
-		for (int i = y; i >= 0; i--) {
-			if (grid[x][i] == BOUNDARY) {
-				hit = true;
-				break;
-			}
-		}
-		if (!hit) {
-			continue;
-		}
-		hit = false;
-		// right 
-		for (int i = x; i < m; i++) {
-			if (grid[i][y] == BOUNDARY) {
-				hit = true;
-				break;
-			}
-		}
-		if (!hit) {
-			continue;
-		}
-		hit = false;
-		// left 
-		for (int i = x; i >= 0; i--) {
-			if (grid[i][y] == BOUNDARY) {
+			if ((grid[x][i] & BOUNDARY) == BOUNDARY) {
 				hit = true;
 				break;
 			}
@@ -147,8 +157,109 @@ int main() {
 			continue;
 		}
 
+		// down
+		hit = false;
+		for (int i = y; i >= 0; i--) {
+			if ((grid[x][i] & BOUNDARY) == BOUNDARY) {
+				hit = true;
+				break;
+			}
+		}
+		if (!hit) {
+			continue;
+		}
+
+		// right 
+		hit = false;
+		for (int i = x; i < m; i++) {
+			if ((grid[i][y] & BOUNDARY) == BOUNDARY) {
+				hit = true;
+				break;
+			}
+		}
+		if (!hit) {
+			continue;
+		}
+
+		// left 
+		hit = false;
+		for (int i = x; i >= 0; i--) {
+			if ((grid[i][y] & BOUNDARY) == BOUNDARY) {
+				hit = true;
+				break;
+			}
+		}
+		if (!hit) {
+			continue;
+		}
+
+#ifdef EIGHT_DIRECTION
+		// upper right
+		hit = false;
+		for (int i = x, j = y; i < m && j < n; i++, j++) {
+			if ((grid[i][j] & BOUNDARY) == BOUNDARY) {
+				hit = true;
+				break;
+			}
+		}
+		if (!hit) {
+			continue;
+		}
+
+		// lower right
+		hit = false;
+		for (int i = x, j = y; i < m && j >= 0; i++, j--) {
+			if ((grid[i][j] & BOUNDARY) == BOUNDARY) {
+				hit = true;
+				break;
+			}
+		}
+		if (!hit) {
+			continue;
+		}		
+
+		// upper left
+		hit = false;
+		for (int i = x, j = y; i >= 0 && j < n; i--, j++) {
+			if ((grid[i][j] & BOUNDARY) == BOUNDARY) {
+				hit = true;
+				break;
+			}
+		}
+		if (!hit) {
+			continue;
+		}	
+
+		// lower left
+		hit = false;
+		for (int i = x, j = y; i >= 0 && j >= 0; i--, j--) {
+			if ((grid[i][j] & BOUNDARY) == BOUNDARY) {
+				hit = true;
+				break;
+			}
+		}
+		if (!hit) {
+			continue;
+		}
+
+#endif
 		count++;
+		//grid[x][y] |= INSIDE;
 		cout << min_x + x * CELL_LENGTH << " " << min_y + y * CELL_LENGTH << endl;
 	}
+
+	//for (int i = 0; i < 10; i++) {
+	//	grow(grid);
+	//	shrink(grid);
+	//}
+
+	//for (int i = 0; i < m; i++) {
+	//	for (int j = 0; j < n; j++) {
+	//		if ((grid[i][j] & INSIDE) == INSIDE) {
+	//			cout << min_x + i * CELL_LENGTH << " " << min_y + j * CELL_LENGTH << endl;
+	//		}
+	//	}
+	//}
+	
 	return 0;
 }
