@@ -59,27 +59,50 @@ int get_neighbor_count(const vector<vector<unsigned int> > &v, int x, int y) {
 }
 
 
-vector<vector<unsigned int> > grow(const vector<vector<unsigned int> > &v) {
+int get_neighbor_count_no_boundary(const vector<vector<unsigned int> > &v, int x, int y) {
+	int count = 0;
+	for (int i = x - 1; i <= x + 1; i++) {
+		for (int j = y - 1; j <= y + 1; j++) {
+			if (i == x && j == y)
+				continue;
+			if ( (v[i][j] & BOUNDARY) == BOUNDARY )
+				return 0;
+			if ( (v[i][j] & INSIDE) == INSIDE )
+				count++;
+		}
+	}
+	//cout << count << endl;
+	return count;
+}
+
+
+vector<vector<unsigned int> > grow(const vector<vector<unsigned int> > &v, int bound, bool count_boundary = true) {
 	int m = v.size();
 	int n = v[0].size();
 	vector<vector<unsigned int> > ret = v;
 	for (int i = 1; i < m - 1; i++) {
 		for (int j = 1; j < n - 1; j++) {
-			if (get_neighbor_count(v, i, j) >= 5) {
-				ret[i][j] |= INSIDE;
+			if (count_boundary) {
+				if (get_neighbor_count(v, i, j) >= bound) {
+					ret[i][j] |= INSIDE;
+				}
+			} else {
+				if (get_neighbor_count_no_boundary(v, i, j) >= bound) {
+					ret[i][j] |= INSIDE;
+				}
 			}
 		}
 	}
 	return ret;
 }
 
-vector<vector<unsigned int> > shrink(vector<vector<unsigned int> > &v) {
+vector<vector<unsigned int> > shrink(vector<vector<unsigned int> > &v, int bound) {
 	int m = v.size();
 	int n = v[0].size();
 	vector<vector<unsigned int> > ret = v;
 	for (int i = 1; i < m - 1; i++) {
 		for (int j = 1; j < n - 1; j++) {
-			if (get_neighbor_count(v, i, j) <= 5) {
+			if (get_neighbor_count(v, i, j) <= bound) {
 				ret[i][j] &= ~INSIDE;
 			}
 		}
@@ -257,10 +280,14 @@ int main() {
 	//grid = grow(grid);
 
 	for (int i = 0; i < 100; i++) {
-		grid = grow(grid);
+		grid = grow(grid, 5, true);
 	}
 
-	//for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 30; i++) {
+		grid = grow(grid, 3, false);
+	}
+
+	//for (int i = 0; i < 10; i++) {
 	//	grid = shrink(grid);
 	//}
 
