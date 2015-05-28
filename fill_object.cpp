@@ -167,7 +167,6 @@ int main() {
 
 	//fclose(stdout);
 	//cout << "grid cell count: " << grid.size() << endl;
-	freopen("random_inside_points.txt", "w", stdout);
 
 	int count = 0;
 	const int threshold = 3000;
@@ -304,8 +303,26 @@ int main() {
 		}
 	}
 
+// remove isolated inside point
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			if ((grid[i][j] & INSIDE) == INSIDE) {
+				if (i-1 >= 0 && (grid[i-1][j] & INSIDE) == INSIDE )
+					continue;
+				if (i+1 < m && (grid[i+1][j] & INSIDE) == INSIDE )
+					continue;
+				if (j-1 >= 0 && (grid[i][j-1] & INSIDE) == INSIDE )
+					continue;
+				if (j+1 < n && (grid[i][j+1] & INSIDE) == INSIDE )
+					continue;
+				grid[i][j] &= ~INSIDE;
+			}
+		}
+	}
+
 // print random inside points
-	
+	freopen("random_inside_points.txt", "w", stdout);
+
 	for (int i = 0; i < m; i++) {
 		for (int j = 0; j < n; j++) {
 			if ((grid[i][j] & INSIDE) == INSIDE) {
@@ -346,7 +363,7 @@ int main() {
 					for (int q = 0; q < size; q++) {
 						if (point_exist_in_cell(min_x + i * CELL_LENGTH + p * SMALL_CELL_LENGTH,
 												min_y + j * CELL_LENGTH + q * SMALL_CELL_LENGTH,
-												2,
+												1,
 												SMALL_CELL_LENGTH)) {
 							exist[p][q] = true;
 						}
@@ -411,7 +428,7 @@ int main() {
 
 	int size = CELL_LENGTH / SMALL_CELL_LENGTH;
 
-	// fill in side point
+	// fill inside point
 	for (int i = 0; i < m; i++) {
 		for (int j = 0; j < n; j++) {
 			if ((grid[i][j] & INSIDE) == INSIDE) {
