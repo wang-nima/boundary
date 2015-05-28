@@ -6,7 +6,7 @@
 #include <cstdlib>
 using namespace std;
 
-#define CELL_LENGTH 3		// 1 mm
+#define CELL_LENGTH 1		// 1 mm
 #define SMALL_CELL_LENGTH 0.1
 
 
