@@ -409,6 +409,22 @@ int main() {
 		}
 	}
 
+	int size = CELL_LENGTH / SMALL_CELL_LENGTH;
+
+	// fill in side point
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			if ((grid[i][j] & INSIDE) == INSIDE) {
+				for (int p = 0; p < size; p++) {
+					for (int q = 0; q < size; q++) {
+						cout << min_x + i * CELL_LENGTH + p * SMALL_CELL_LENGTH << " "\
+							 << min_y + j * CELL_LENGTH + q * SMALL_CELL_LENGTH << endl;
+					}
+				}
+			}
+		}
+	}
+
 
 
 	
