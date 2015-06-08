@@ -1,2 +1,6 @@
-plot(p, q, 'o', m, n, '.')
+%figure(1)
+%plot(p, q, 'o', m, n, '.', a, b, '.')
 %plot(p, q, 'o')
+%figure(2)
+plot(p, q, 'o', m, n, '.', inside_x, inside_y, '.')
+%plot(p, q, 'o', m, n, '.')

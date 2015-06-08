@@ -11,10 +11,11 @@ using namespace std;
 //};
 
 int main() {
-	freopen("all_points_without_noise.txt", "r", stdin);
+	freopen("objectASC.txt", "r", stdin);
 	freopen("buttom_points.txt", "w", stdout);
 	float x, y, z;
-	while (cin >> x >> y >> z) {
+	float a, b, c, d;
+	while (cin >> x >> y >> z >> a >> b >> c >> d) {
 		if (z < THRESHOLD) {
 			cout << x << " " << y << endl;
 		}
